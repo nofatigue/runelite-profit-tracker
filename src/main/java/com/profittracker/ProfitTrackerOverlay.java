@@ -14,7 +14,6 @@ import java.text.DecimalFormat;
  * The ProfitTrackerOverlay class is used to display profit values for the user
  */
 public class ProfitTrackerOverlay extends Overlay {
-    private Long inventoryValue;
     private long profitValue;
     private long profitRateValue;
     private final ProfitTrackerConfig ptConfig;
@@ -28,7 +27,6 @@ public class ProfitTrackerOverlay extends Overlay {
     private ProfitTrackerOverlay(ProfitTrackerConfig config)
     {
         setPosition(OverlayPosition.ABOVE_CHATBOX_RIGHT);
-        inventoryValue = 0L;
         profitValue = 0L;
         ptConfig = config;
     }
@@ -40,8 +38,7 @@ public class ProfitTrackerOverlay extends Overlay {
      */
     @Override
     public Dimension render(Graphics2D graphics) {
-        String titleText = "Inventory Value:";
-        String valueString = "GE price:";
+        String titleText = "Profit Tracker:";
 
         // Not sure how this can occur, but it was recommended to do so
         panelComponent.getChildren().clear();
@@ -57,12 +54,6 @@ public class ProfitTrackerOverlay extends Overlay {
                 graphics.getFontMetrics().stringWidth(titleText) + 30,
                 0));
 
-        // Build line on the overlay for world number
-        panelComponent.getChildren().add(LineComponent.builder()
-                .left(valueString)
-                .right(FormatIntegerWithCommas(inventoryValue))
-                .build());
-
         // Profit
         panelComponent.getChildren().add(LineComponent.builder()
                 .left("Profit:")
@@ -76,18 +67,6 @@ public class ProfitTrackerOverlay extends Overlay {
                 .build());
 
         return panelComponent.render(graphics);
-    }
-
-    /**
-     * Updates inventory value display
-     * @param newValue the value to update the inventoryValue's {{@link #panelComponent}} with.
-     */
-    public void updateInventoryValue(final long newValue) {
-        SwingUtilities.invokeLater(() ->
-            inventoryValue = newValue
-        );
-
-
     }
 
     /**

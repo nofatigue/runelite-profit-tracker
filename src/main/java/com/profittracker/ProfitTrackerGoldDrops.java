@@ -25,6 +25,15 @@ public class ProfitTrackerGoldDrops {
         and a text widget with a mod icon (<img=11> in text)
        So to create a gold drop, we create a fake xp drop, and interefere in the middle,
        and change the sprite and text to our liking.
+
+       Flow is:
+
+       1. create xp drop using runScript (see requestGoldDrop)
+       2. getting in the middle of the drop, changing icon and text (see handleXpDrop)
+
+       A more correct way to do this is probably by calling Item.GetImage with wanted
+       coin quantity, which will give us correct coin icon and correct text,
+       and simply drawing that image ourselfs somehow. Instead of using xp drop mechanism.
      */
 
     /*
