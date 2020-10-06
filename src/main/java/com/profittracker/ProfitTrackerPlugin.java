@@ -142,7 +142,7 @@ public class ProfitTrackerPlugin extends Plugin
         long newProfit;
 
         // calculate current inventory value
-        newInventoryValue = inventoryValueObject.calculateInventoryValue();
+        newInventoryValue = inventoryValueObject.calculateInventoryAndEquipmentValue();
 
         if (!skipTickForProfitCalculation)
         {
@@ -178,15 +178,15 @@ public class ProfitTrackerPlugin extends Plugin
 
         int containerId = event.getContainerId();
 
-        if(containerId == InventoryID.INVENTORY.getId()) {
+        if( containerId == InventoryID.INVENTORY.getId() ||
+            containerId == InventoryID.EQUIPMENT.getId()) {
             // inventory has changed - need calculate profit in onGameTick
             inventoryValueChanged = true;
 
         }
 
         // in these events, inventory WILL be changed but we DON'T want to calculate profit!
-        if(     containerId == InventoryID.BANK.getId() ||
-                containerId == InventoryID.EQUIPMENT.getId()) {
+        if(     containerId == InventoryID.BANK.getId()) {
             // this is a bank or equipment interaction.
             // Don't take this into account
             skipTickForProfitCalculation = true;
