@@ -80,7 +80,7 @@ public class ProfitTrackerOverlay extends Overlay {
 
         // Set the size of the overlay (width)
         panelComponent.setPreferredSize(new Dimension(
-                graphics.getFontMetrics().stringWidth(titleText) + 30,
+                graphics.getFontMetrics().stringWidth(titleText) + 40,
                 0));
 
         // elapsed time
