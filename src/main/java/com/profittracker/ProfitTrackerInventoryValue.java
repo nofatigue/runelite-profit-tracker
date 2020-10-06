@@ -47,7 +47,7 @@ public class ProfitTrackerInventoryValue {
         return itemValue;
     }
 
-    public long calculateInventoryValue()
+    public long calculateContainerValue(InventoryID ContainerID)
     {
         /*
         calculate total inventory value
@@ -55,7 +55,7 @@ public class ProfitTrackerInventoryValue {
 
         long newInventoryValue;
 
-        ItemContainer container = client.getItemContainer(InventoryID.INVENTORY);
+        ItemContainer container = client.getItemContainer(ContainerID);
 
         if (container == null)
         {
@@ -70,4 +70,34 @@ public class ProfitTrackerInventoryValue {
 
         return newInventoryValue;
     }
+
+
+    public long calculateInventoryValue()
+    {
+        /*
+        calculate total inventory value
+         */
+
+        return calculateContainerValue(InventoryID.INVENTORY);
+
+    }
+
+    public long calculateEquipmentValue()
+    {
+        /*
+        calculate total equipment value
+         */
+        return calculateContainerValue(InventoryID.EQUIPMENT);
+    }
+
+    public long calculateInventoryAndEquipmentValue()
+    {
+        /*
+        calculate total inventory + equipment value
+         */
+
+        return calculateInventoryValue() + calculateEquipmentValue();
+    }
+
+
 }

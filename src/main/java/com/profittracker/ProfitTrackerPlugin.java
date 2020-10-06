@@ -31,7 +31,7 @@ public class ProfitTrackerPlugin extends Plugin
 
     private boolean skipTickForProfitCalculation;
     private boolean inventoryValueChanged;
-
+    private boolean inProfitTrackSession;
 
     @Inject
     private Client client;
@@ -58,12 +58,17 @@ public class ProfitTrackerPlugin extends Plugin
 
         inventoryValueObject = new ProfitTrackerInventoryValue(client, itemManager);
 
-        ResetCalculations();
+        initializeVariables();
+
+        // start tracking only if plugin was re-started mid game
+        if (client.getGameState() == GameState.LOGGED_IN)
+        {
+            startProfitTrackingSession();
+        }
 
     }
 
-    // start profit calculation from this point
-    private void ResetCalculations()
+    private void initializeVariables()
     {
         // value here doesn't matter, will be overwritten
         prevInventoryValue = -1;
@@ -71,14 +76,34 @@ public class ProfitTrackerPlugin extends Plugin
         // profit begins at 0 of course
         totalProfit = 0;
 
-        // initialize timer
-        startTickMillis = System.currentTimeMillis();
+        // this will be filled with actual information in startProfitTrackingSession
+        startTickMillis = 0;
 
         // skip profit calculation for first tick, to initialize first inventory value
         skipTickForProfitCalculation = true;
 
-
         inventoryValueChanged = false;
+
+        inProfitTrackSession = false;
+
+    }
+
+    private void startProfitTrackingSession()
+    {
+        /*
+        Start tracking profit from now on
+         */
+
+        initializeVariables();
+
+        // initialize timer
+        startTickMillis = System.currentTimeMillis();
+
+        overlay.updateStartTimeMillies(startTickMillis);
+
+        overlay.startSession();
+
+        inProfitTrackSession = true;
     }
 
     @Override
@@ -103,8 +128,12 @@ public class ProfitTrackerPlugin extends Plugin
 
         */
 
-        long profitPerHour;
         long tickProfit;
+
+        if (!inProfitTrackSession)
+        {
+            return;
+        }
 
         if (inventoryValueChanged)
         {
@@ -124,10 +153,6 @@ public class ProfitTrackerPlugin extends Plugin
             inventoryValueChanged = false;
         }
 
-        profitPerHour = calculateProfitHourly(startTickMillis, totalProfit);
-
-        overlay.updateProfitRate(profitPerHour);
-
     }
 
     private long calculateTickProfit()
@@ -142,7 +167,7 @@ public class ProfitTrackerPlugin extends Plugin
         long newProfit;
 
         // calculate current inventory value
-        newInventoryValue = inventoryValueObject.calculateInventoryValue();
+        newInventoryValue = inventoryValueObject.calculateInventoryAndEquipmentValue();
 
         if (!skipTickForProfitCalculation)
         {
@@ -178,52 +203,22 @@ public class ProfitTrackerPlugin extends Plugin
 
         int containerId = event.getContainerId();
 
-        if(containerId == InventoryID.INVENTORY.getId()) {
+        if( containerId == InventoryID.INVENTORY.getId() ||
+            containerId == InventoryID.EQUIPMENT.getId()) {
             // inventory has changed - need calculate profit in onGameTick
             inventoryValueChanged = true;
 
         }
 
         // in these events, inventory WILL be changed but we DON'T want to calculate profit!
-        if(     containerId == InventoryID.BANK.getId() ||
-                containerId == InventoryID.EQUIPMENT.getId()) {
-            // this is a bank or equipment interaction.
+        if(     containerId == InventoryID.BANK.getId()) {
+            // this is a bank interaction.
             // Don't take this into account
             skipTickForProfitCalculation = true;
 
         }
 
     }
-
-    static long calculateProfitHourly(long startTimeMillies, long profit)
-    {
-        long averageProfitThousandForHour;
-        long averageProfitForSecond;
-        long secondsElapsed;
-        long timeDeltaMillis;
-        long currentTimeMillis;
-
-        // calculate time
-        currentTimeMillis = System.currentTimeMillis();
-
-        timeDeltaMillis = currentTimeMillis - startTimeMillies;
-
-        secondsElapsed = timeDeltaMillis / 1000;
-        if (secondsElapsed > 0)
-        {
-            averageProfitForSecond = (profit) / secondsElapsed;
-        }
-        else
-        {
-            // can't divide by zero, not enough time has passed
-            averageProfitForSecond = 0;
-        }
-
-        averageProfitThousandForHour = averageProfitForSecond * 3600 / 1000;
-
-        return averageProfitThousandForHour;
-    }
-
 
     @Subscribe
     public void onMenuOptionClicked(MenuOptionClicked event) {

@@ -15,7 +15,9 @@ import java.text.DecimalFormat;
  */
 public class ProfitTrackerOverlay extends Overlay {
     private long profitValue;
-    private long profitRateValue;
+    private long startTimeMillies;
+    private boolean inProfitTrackSession;
+
     private final ProfitTrackerConfig ptConfig;
     private final PanelComponent panelComponent = new PanelComponent();
 
@@ -29,6 +31,8 @@ public class ProfitTrackerOverlay extends Overlay {
         setPosition(OverlayPosition.ABOVE_CHATBOX_RIGHT);
         profitValue = 0L;
         ptConfig = config;
+        startTimeMillies = 0;
+        inProfitTrackSession = false;
     }
 
     /**
@@ -39,6 +43,20 @@ public class ProfitTrackerOverlay extends Overlay {
     @Override
     public Dimension render(Graphics2D graphics) {
         String titleText = "Profit Tracker:";
+        long secondsElapsed;
+        long profitRateValue;
+
+        if (startTimeMillies > 0)
+        {
+            secondsElapsed = (System.currentTimeMillis() - startTimeMillies) / 1000;
+        }
+        else
+        {
+            // there was never any session
+            secondsElapsed = 0;
+        }
+
+        profitRateValue = calculateProfitHourly(secondsElapsed, profitValue);
 
         // Not sure how this can occur, but it was recommended to do so
         panelComponent.getChildren().clear();
@@ -49,10 +67,27 @@ public class ProfitTrackerOverlay extends Overlay {
                 .color(Color.GREEN)
                 .build());
 
+        if (!inProfitTrackSession)
+        {
+            // not in session
+            // notify user to reset plugin in order to start
+            panelComponent.getChildren().add(TitleComponent.builder()
+                    .text("Reset plugin to start")
+                    .color(Color.RED)
+                    .build());
+
+        }
+
         // Set the size of the overlay (width)
         panelComponent.setPreferredSize(new Dimension(
-                graphics.getFontMetrics().stringWidth(titleText) + 30,
+                graphics.getFontMetrics().stringWidth(titleText) + 40,
                 0));
+
+        // elapsed time
+        panelComponent.getChildren().add(LineComponent.builder()
+                .left("Time:")
+                .right(formatTimeIntervalFromSec(secondsElapsed))
+                .build());
 
         // Profit
         panelComponent.getChildren().add(LineComponent.builder()
@@ -79,15 +114,52 @@ public class ProfitTrackerOverlay extends Overlay {
         );
     }
 
+
     /**
-     * Updates profit rate value display
-     * @param newValue the value to update the profitRateValue's {{@link #panelComponent}} with.
+     * Updates startTimeMillies display
      */
-    public void updateProfitRate(final long newValue) {
+    public void updateStartTimeMillies(final long newValue) {
         SwingUtilities.invokeLater(() ->
-            profitRateValue = newValue
+                startTimeMillies = newValue
         );
     }
 
+    public void startSession()
+    {
+        SwingUtilities.invokeLater(() ->
+                inProfitTrackSession = true
+        );
+    }
 
+    private static String formatTimeIntervalFromSec(final long totalSecElapsed)
+    {
+        /*
+        elapsed seconds to format HH:MM:SS
+         */
+        final long sec = totalSecElapsed % 60;
+        final long min = (totalSecElapsed / 60) % 60;
+        final long hr = totalSecElapsed / 3600;
+
+        return String.format("%02d:%02d:%02d", hr, min, sec);
+    }
+
+    static long calculateProfitHourly(long secondsElapsed, long profit)
+    {
+        long averageProfitThousandForHour;
+        long averageProfitForSecond;
+
+        if (secondsElapsed > 0)
+        {
+            averageProfitForSecond = (profit) / secondsElapsed;
+        }
+        else
+        {
+            // can't divide by zero, not enough time has passed
+            averageProfitForSecond = 0;
+        }
+
+        averageProfitThousandForHour = averageProfitForSecond * 3600 / 1000;
+
+        return averageProfitThousandForHour;
+    }
 }
