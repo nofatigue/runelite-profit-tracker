@@ -31,7 +31,7 @@ public class ProfitTrackerPlugin extends Plugin
 
     private boolean skipTickForProfitCalculation;
     private boolean inventoryValueChanged;
-
+    private boolean inProfitTrackSession;
 
     @Inject
     private Client client;
@@ -58,12 +58,17 @@ public class ProfitTrackerPlugin extends Plugin
 
         inventoryValueObject = new ProfitTrackerInventoryValue(client, itemManager);
 
-        ResetCalculations();
+        initializeVariables();
+
+        // start tracking only if plugin was re-started mid game
+        if (client.getGameState() == GameState.LOGGED_IN)
+        {
+            startProfitTrackingSession();
+        }
 
     }
 
-    // start profit calculation from this point
-    private void ResetCalculations()
+    private void initializeVariables()
     {
         // value here doesn't matter, will be overwritten
         prevInventoryValue = -1;
@@ -71,16 +76,34 @@ public class ProfitTrackerPlugin extends Plugin
         // profit begins at 0 of course
         totalProfit = 0;
 
+        // this will be filled with actual information in startProfitTrackingSession
+        startTickMillis = 0;
+
+        // skip profit calculation for first tick, to initialize first inventory value
+        skipTickForProfitCalculation = true;
+
+        inventoryValueChanged = false;
+
+        inProfitTrackSession = false;
+
+    }
+
+    private void startProfitTrackingSession()
+    {
+        /*
+        Start tracking profit from now on
+         */
+
+        initializeVariables();
+
         // initialize timer
         startTickMillis = System.currentTimeMillis();
 
         overlay.updateStartTimeMillies(startTickMillis);
 
-        // skip profit calculation for first tick, to initialize first inventory value
-        skipTickForProfitCalculation = true;
+        overlay.startSession();
 
-
-        inventoryValueChanged = false;
+        inProfitTrackSession = true;
     }
 
     @Override
@@ -106,6 +129,11 @@ public class ProfitTrackerPlugin extends Plugin
         */
 
         long tickProfit;
+
+        if (!inProfitTrackSession)
+        {
+            return;
+        }
 
         if (inventoryValueChanged)
         {
@@ -184,7 +212,7 @@ public class ProfitTrackerPlugin extends Plugin
 
         // in these events, inventory WILL be changed but we DON'T want to calculate profit!
         if(     containerId == InventoryID.BANK.getId()) {
-            // this is a bank or equipment interaction.
+            // this is a bank interaction.
             // Don't take this into account
             skipTickForProfitCalculation = true;
 

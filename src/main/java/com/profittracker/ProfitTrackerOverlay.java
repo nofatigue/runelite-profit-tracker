@@ -16,6 +16,7 @@ import java.text.DecimalFormat;
 public class ProfitTrackerOverlay extends Overlay {
     private long profitValue;
     private long startTimeMillies;
+    private boolean inProfitTrackSession;
 
     private final ProfitTrackerConfig ptConfig;
     private final PanelComponent panelComponent = new PanelComponent();
@@ -31,6 +32,7 @@ public class ProfitTrackerOverlay extends Overlay {
         profitValue = 0L;
         ptConfig = config;
         startTimeMillies = 0;
+        inProfitTrackSession = false;
     }
 
     /**
@@ -44,7 +46,15 @@ public class ProfitTrackerOverlay extends Overlay {
         long secondsElapsed;
         long profitRateValue;
 
-        secondsElapsed = (System.currentTimeMillis() - startTimeMillies) / 1000;
+        if (startTimeMillies > 0)
+        {
+            secondsElapsed = (System.currentTimeMillis() - startTimeMillies) / 1000;
+        }
+        else
+        {
+            // there was never any session
+            secondsElapsed = 0;
+        }
 
         profitRateValue = calculateProfitHourly(secondsElapsed, profitValue);
 
@@ -56,6 +66,17 @@ public class ProfitTrackerOverlay extends Overlay {
                 .text(titleText)
                 .color(Color.GREEN)
                 .build());
+
+        if (!inProfitTrackSession)
+        {
+            // not in session
+            // notify user to reset plugin in order to start
+            panelComponent.getChildren().add(TitleComponent.builder()
+                    .text("Reset plugin to start")
+                    .color(Color.RED)
+                    .build());
+
+        }
 
         // Set the size of the overlay (width)
         panelComponent.setPreferredSize(new Dimension(
@@ -100,6 +121,13 @@ public class ProfitTrackerOverlay extends Overlay {
     public void updateStartTimeMillies(final long newValue) {
         SwingUtilities.invokeLater(() ->
                 startTimeMillies = newValue
+        );
+    }
+
+    public void startSession()
+    {
+        SwingUtilities.invokeLater(() ->
+                inProfitTrackSession = true
         );
     }
 
