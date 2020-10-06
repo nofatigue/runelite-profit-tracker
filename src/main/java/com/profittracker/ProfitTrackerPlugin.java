@@ -74,6 +74,8 @@ public class ProfitTrackerPlugin extends Plugin
         // initialize timer
         startTickMillis = System.currentTimeMillis();
 
+        overlay.updateStartTimeMillies(startTickMillis);
+
         // skip profit calculation for first tick, to initialize first inventory value
         skipTickForProfitCalculation = true;
 
@@ -103,7 +105,6 @@ public class ProfitTrackerPlugin extends Plugin
 
         */
 
-        long profitPerHour;
         long tickProfit;
 
         if (inventoryValueChanged)
@@ -123,10 +124,6 @@ public class ProfitTrackerPlugin extends Plugin
 
             inventoryValueChanged = false;
         }
-
-        profitPerHour = calculateProfitHourly(startTickMillis, totalProfit);
-
-        overlay.updateProfitRate(profitPerHour);
 
     }
 
@@ -194,36 +191,6 @@ public class ProfitTrackerPlugin extends Plugin
         }
 
     }
-
-    static long calculateProfitHourly(long startTimeMillies, long profit)
-    {
-        long averageProfitThousandForHour;
-        long averageProfitForSecond;
-        long secondsElapsed;
-        long timeDeltaMillis;
-        long currentTimeMillis;
-
-        // calculate time
-        currentTimeMillis = System.currentTimeMillis();
-
-        timeDeltaMillis = currentTimeMillis - startTimeMillies;
-
-        secondsElapsed = timeDeltaMillis / 1000;
-        if (secondsElapsed > 0)
-        {
-            averageProfitForSecond = (profit) / secondsElapsed;
-        }
-        else
-        {
-            // can't divide by zero, not enough time has passed
-            averageProfitForSecond = 0;
-        }
-
-        averageProfitThousandForHour = averageProfitForSecond * 3600 / 1000;
-
-        return averageProfitThousandForHour;
-    }
-
 
     @Subscribe
     public void onMenuOptionClicked(MenuOptionClicked event) {
