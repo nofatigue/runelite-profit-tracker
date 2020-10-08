@@ -61,7 +61,7 @@ public class ProfitTrackerGoldDrops {
       1. to know the value later when we actually use it,
       2. to know to catch the next fake xpdrop in onScriptPreFired
     */
-    private int currentGoldDropValue;
+    private long currentGoldDropValue;
 
     ProfitTrackerGoldDrops(Client client, ItemManager itemManager)
     {
@@ -70,7 +70,7 @@ public class ProfitTrackerGoldDrops {
 
         prepareCoinSprite();
 
-        currentGoldDropValue = 0;
+        currentGoldDropValue = 0L;
 
     }
 
@@ -99,7 +99,7 @@ public class ProfitTrackerGoldDrops {
 
         // extract information from currentGoldDropValue
         boolean isThisGoldDrop =   (currentGoldDropValue != 0);
-        int     goldDropValue =     currentGoldDropValue;
+        long     goldDropValue =     currentGoldDropValue;
 
         // done with this gold drop anyway
         currentGoldDropValue = 0;
@@ -108,7 +108,7 @@ public class ProfitTrackerGoldDrops {
 
     }
 
-    private void handleXpDrop(int xpDropWidgetId, boolean isThisGoldDrop, int goldDropValue)
+    private void handleXpDrop(int xpDropWidgetId, boolean isThisGoldDrop, long goldDropValue)
     {
         final Widget xpDropWidget;
         final Widget dropTextWidget;
@@ -147,13 +147,14 @@ public class ProfitTrackerGoldDrops {
 
 
     }
-    private void xpDropToGoldDrop(Widget dropTextWidget, Widget dropSpriteWidget, int goldDropValue)
+    private void xpDropToGoldDrop(Widget dropTextWidget, Widget dropSpriteWidget, long goldDropValue)
     {
         /*
         Change xpdrop icon and text, to make a gold drop
          */
 
-        dropTextWidget.setText(Integer.toString(goldDropValue));
+
+        dropTextWidget.setText(formatGoldDropText(goldDropValue));
 
         if (goldDropValue > 0)
         {
@@ -199,7 +200,7 @@ public class ProfitTrackerGoldDrops {
 
     }
 
-    public void requestGoldDrop(int amount)
+    public void requestGoldDrop(long amount)
     {
         /*
         We create gold drops by faking a fake xp drop :)
@@ -226,5 +227,26 @@ public class ProfitTrackerGoldDrops {
         int defaultColorId = client.getVar(Varbits.EXPERIENCE_DROP_COLOR);
         int color = colorEnum.getIntValue(defaultColorId);
         xpDropTextWidget.setTextColor(color);
+    }
+
+    private String formatGoldDropText(long goldDropValue)
+    {
+        // format gold value runescape style
+        // up to 10,000K
+        // I.E: 100,000 -> 100K
+
+        if (Math.abs(goldDropValue) < 10000L)
+        {
+            return Long.toString(goldDropValue);
+        }
+        else if (Math.abs(goldDropValue) < 10L * 1000L * 1000L)
+        {
+            return (goldDropValue / 1000) + "K";
+        }
+        else
+        {
+            return "ALOT";
+        }
+
     }
 }
