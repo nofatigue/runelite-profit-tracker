@@ -112,7 +112,7 @@ public class ProfitTrackerGoldDrops {
     {
         final Widget xpDropWidget;
         final Widget dropTextWidget;
-        final Widget dropSpriteWidget;
+
         Widget[] xpDropWidgetChildren;
 
         // get widget from ID
@@ -126,17 +126,28 @@ public class ProfitTrackerGoldDrops {
 
         xpDropWidgetChildren = xpDropWidget.getChildren();
 
-        if (xpDropWidgetChildren.length < 2)
+        if (xpDropWidgetChildren.length < 1)
         {
             log.error(String.format("Unexpected xpDropWidgets length! %d", xpDropWidgetChildren.length));
             return;
         }
 
         dropTextWidget = xpDropWidgetChildren[0];
-        dropSpriteWidget = xpDropWidgetChildren[1];
 
         if (isThisGoldDrop)
         {
+            final Widget dropSpriteWidget;
+
+            if (xpDropWidgetChildren.length < 2)
+            {
+                log.error(String.format(
+                        "Unexpected xpDropWidgetChildren length for a gold drop! length! %d",
+                        xpDropWidgetChildren.length));
+                return;
+            }
+
+            dropSpriteWidget = xpDropWidgetChildren[1];
+
             xpDropToGoldDrop(dropTextWidget, dropSpriteWidget, goldDropValue);
         }
         else
