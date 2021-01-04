@@ -15,6 +15,9 @@ public class ProfitTrackerInventoryValue {
     /*
     Singletons which will be provided at creation by the plugin
      */
+
+    static final int EMPTY_SLOT_ITEMID = -1;
+
     private final ItemManager itemManager;
     private final Client client;
 
@@ -29,22 +32,24 @@ public class ProfitTrackerInventoryValue {
          */
 
         int itemId = item.getId();
-        log.info(String.format("calculateItemValue itemId = %d", itemId));
 
-        if (itemId <= 0)
+        if (itemId < -1)
         {
+            // unexpected
             log.info("Bad item id!" + itemId);
             return 0;
 
         }
 
-        ItemComposition itemComp = itemManager.getItemComposition(itemId);
-        String itemName = itemComp.getName();
-        int itemValue;
-        // multiply quantity  GE value
-        itemValue = item.getQuantity() * (itemManager.getItemPrice(item.getId()));
+        if (itemId == EMPTY_SLOT_ITEMID)
+        {
+            return 0;
+        }
 
-        return itemValue;
+        log.info(String.format("calculateItemValue itemId = %d", itemId));
+
+        // multiply quantity  by GE value
+        return item.getQuantity() * (itemManager.getItemPrice(itemId));
     }
 
     public long calculateContainerValue(InventoryID ContainerID)

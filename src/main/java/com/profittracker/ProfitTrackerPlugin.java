@@ -147,7 +147,7 @@ public class ProfitTrackerPlugin extends Plugin
             // generate gold drop
             if (config.goldDrops() && tickProfit != 0)
             {
-                goldDropsObject.requestGoldDrop(Math.toIntExact(tickProfit));
+                goldDropsObject.requestGoldDrop(tickProfit);
             }
 
             inventoryValueChanged = false;
