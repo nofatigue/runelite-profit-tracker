@@ -250,7 +250,7 @@ public class ProfitTrackerGoldDrops {
         {
             return Long.toString(goldDropValue);
         }
-        else if (Math.abs(goldDropValue) < 10L * 1000L * 1000L)
+        else if (Math.abs(goldDropValue) < 2L * 1000L * 1000L)
         {
             return (goldDropValue / 1000) + "K";
         }
