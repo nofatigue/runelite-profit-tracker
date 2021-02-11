@@ -33,6 +33,7 @@ public class ProfitTrackerOverlay extends Overlay {
         ptConfig = config;
         startTimeMillies = 0;
         inProfitTrackSession = false;
+
     }
 
     /**
@@ -45,63 +46,61 @@ public class ProfitTrackerOverlay extends Overlay {
         String titleText = "Profit Tracker:";
         long secondsElapsed;
         long profitRateValue;
+        if(ptConfig.ingameOverlay()) {
+            if (startTimeMillies > 0) {
+                secondsElapsed = (System.currentTimeMillis() - startTimeMillies) / 1000;
+            } else {
+                // there was never any session
+                secondsElapsed = 0;
+            }
 
-        if (startTimeMillies > 0)
-        {
-            secondsElapsed = (System.currentTimeMillis() - startTimeMillies) / 1000;
-        }
-        else
-        {
-            // there was never any session
-            secondsElapsed = 0;
-        }
+            profitRateValue = calculateProfitHourly(secondsElapsed, profitValue);
 
-        profitRateValue = calculateProfitHourly(secondsElapsed, profitValue);
+            // Not sure how this can occur, but it was recommended to do so
+            panelComponent.getChildren().clear();
 
-        // Not sure how this can occur, but it was recommended to do so
-        panelComponent.getChildren().clear();
-
-        // Build overlay title
-        panelComponent.getChildren().add(TitleComponent.builder()
-                .text(titleText)
-                .color(Color.GREEN)
-                .build());
-
-        if (!inProfitTrackSession)
-        {
-            // not in session
-            // notify user to reset plugin in order to start
+            // Build overlay title
             panelComponent.getChildren().add(TitleComponent.builder()
-                    .text("Reset plugin to start")
-                    .color(Color.RED)
+                    .text(titleText)
+                    .color(Color.GREEN)
                     .build());
 
+            if (!inProfitTrackSession) {
+                // not in session
+                // notify user to reset plugin in order to start
+                panelComponent.getChildren().add(TitleComponent.builder()
+                        .text("Reset plugin to start")
+                        .color(Color.RED)
+                        .build());
+
+            }
+
+            // Set the size of the overlay (width)
+            panelComponent.setPreferredSize(new Dimension(
+                    graphics.getFontMetrics().stringWidth(titleText) + 40,
+                    0));
+
+            // elapsed time
+            panelComponent.getChildren().add(LineComponent.builder()
+                    .left("Time:")
+                    .right(formatTimeIntervalFromSec(secondsElapsed))
+                    .build());
+
+            // Profit
+            panelComponent.getChildren().add(LineComponent.builder()
+                    .left("Profit:")
+                    .right(FormatIntegerWithCommas(profitValue))
+                    .build());
+
+            // Profit Rate
+            panelComponent.getChildren().add(LineComponent.builder()
+                    .left("Rate:")
+                    .right(profitRateValue + "K/H")
+                    .build());
+
+            return panelComponent.render(graphics);
         }
-
-        // Set the size of the overlay (width)
-        panelComponent.setPreferredSize(new Dimension(
-                graphics.getFontMetrics().stringWidth(titleText) + 40,
-                0));
-
-        // elapsed time
-        panelComponent.getChildren().add(LineComponent.builder()
-                .left("Time:")
-                .right(formatTimeIntervalFromSec(secondsElapsed))
-                .build());
-
-        // Profit
-        panelComponent.getChildren().add(LineComponent.builder()
-                .left("Profit:")
-                .right(FormatIntegerWithCommas(profitValue))
-                .build());
-
-        // Profit Rate
-        panelComponent.getChildren().add(LineComponent.builder()
-                .left("Rate:")
-                .right(profitRateValue + "K/H")
-                .build());
-
-        return panelComponent.render(graphics);
+        return null;
     }
 
     /**
