@@ -69,7 +69,7 @@ public class ProfitTrackerInventoryValue {
 
         Item[] items = container.getItems();
 
-        newInventoryValue = Arrays.stream(items).parallel().flatMapToLong(item ->
+        newInventoryValue = Arrays.stream(items).flatMapToLong(item ->
                 LongStream.of(calculateItemValue(item))
         ).sum();
 
