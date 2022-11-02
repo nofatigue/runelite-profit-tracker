@@ -223,8 +223,8 @@ public class ProfitTrackerPlugin extends Plugin
     @Subscribe
     public void onMenuOptionClicked(MenuOptionClicked event) {
         /* for ignoring deposit in deposit box */
-        log.info(String.format("Click! ID: %d, actionParam: %d ,menuOption: %s, menuTarget: %s, widgetId: %d",
-                event.getId(), event.getActionParam(), event.getMenuOption(), event.getMenuTarget(), event.getWidgetId()));
+        log.info(String.format("Click! ID: %d ,menuOption: %s, menuTarget: %s",
+                event.getId(), event.getMenuOption(), event.getMenuTarget()));
 
         if (event.getId() == ObjectID.BANK_DEPOSIT_BOX) {
             // we've interacted with a deposit box. Don't take this tick into account for profit calculation
