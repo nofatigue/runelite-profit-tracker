@@ -235,7 +235,7 @@ public class ProfitTrackerGoldDrops {
     {
         // taken from XpDropPlugin
         EnumComposition colorEnum = client.getEnum(EnumID.XPDROP_COLORS);
-        int defaultColorId = client.getVar(Varbits.EXPERIENCE_DROP_COLOR);
+        int defaultColorId = client.getVarbitValue(Varbits.EXPERIENCE_DROP_COLOR);
         int color = colorEnum.getIntValue(defaultColorId);
         xpDropTextWidget.setTextColor(color);
     }
